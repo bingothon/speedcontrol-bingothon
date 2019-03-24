@@ -1,5 +1,5 @@
 {
-  "name": "sc-bingothon-additions",
+  "name": "speedcontrol-bingothon",
   "dependencies": {
     "jquery": "^3.3.1",
     "webcomponentsjs": "^2.2.7"

@@ -1,0 +1,72 @@
+{
+  "name": "sc-bingothon-additions",
+  "version": "1.0.0",
+  "dependencies": {
+    "bower-npm-resolver": "^0.10.0",
+    "cheerio": "^1.0.0-rc.1",
+    "deep-equal": "^1.0.1",
+    "discord.js": "^11.4.2",
+    "needle": "^2.2.4",
+    "nodecg-utility-obs": "^5.0.6",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
+    "twitch-js": "^1.2.17",
+    "ws": "^6.2.0"
+  },
+  "nodecg": {
+    "compatibleRange": "^1.2.2",
+    "bundleDependencies": {
+      "nodecg-speedcontrol": "^1.0.0"
+    },
+    "graphics": [
+      {
+        "file": "donation-dashboard.html",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "file": "bingo-board.html",
+        "width": 1280,
+        "height": 720
+      }
+    ],
+    "dashboardPanels": [
+      {
+        "name": "obs-control",
+        "title": "OBS Remote Control",
+        "file": "obs.html",
+        "width": 3,
+        "headerColor": "#008BB9"
+      },
+      {
+        "name": "tiltify-dashboard",
+        "title": "Tiltify Dashboard",
+        "width": 2,
+        "file": "TiltifyDashboard.html",
+        "headerColor": "#008BB9"
+      },
+      {
+        "name": "twitch-player-control",
+        "title": "Twitch Player",
+        "width": 2,
+        "file": "TwitchPlayerControl.html",
+        "headerColor": "#008BB9"
+      },
+      {
+        "name": "bingo-color-chooser",
+        "title": "Bingo Color Chooser",
+        "width": 2,
+        "file": "BingoColorChooser.html",
+        "headerColor": "#008BB9"
+      },
+      {
+        "name": "twitch-resizer-dashboard",
+        "title": "Twitch Resizer",
+        "width": 10,
+        "file": "TwitchResizerDashboard.html",
+        "headerColor": "#008BB9",
+        "workspace": "Twitch Resizing"
+      }
+    ]
+  }
+}

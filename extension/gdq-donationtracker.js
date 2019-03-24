@@ -38,6 +38,7 @@ if (nodecg.bundleConfig && nodecg.bundleConfig.donationtracker && nodecg.bundleC
         });
 
         // last 20 donations (limited by the tracker)
+        // TODO: send out event on new donation
         needle.get(feedUrl + "/feed/donations/"+eventSlug, function(err, response) {
             if (err || !response.body || response.statusCode != 200) {
                 nodecg.log.warn("error getting donations!");

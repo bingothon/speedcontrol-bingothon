@@ -1,0 +1,24 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"properties": {
+		"discord": {
+			"type": "object",
+			"properties": {
+				"test": {"type": "boolean", "default": true},
+				"token": {"type": "string", "default": "DISCORD_BOT_TOKEN"},
+				"serverID": {"type": "string", "default": "DISCORD_SERVER_ID"},
+				"commandChannelID": {"type": "string", "default": "DISCORD_SERVER_ID"},
+				"voiceChannelID": {"type": "string", "default": "DISCORD_SERVER_ID"}
+			}
+		},
+		"schedule": {
+			"type": "object",
+			"properties": {
+				"enable": {"type": "boolean", "default": false},
+				"url": {"type": "string", "default": "https://devdonations.bingothon.com"},
+				"eventSlug": {"type": "string", "default": "bingothon18"}
+			}
+		}
+	}
+}

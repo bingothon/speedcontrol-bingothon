@@ -28,6 +28,7 @@ if (boardRep.value.colorShown === undefined) {
 }
 const bingoColors = nodecg.Replicant('bingo-colors');
 const currentRunRep = nodecg.Replicant('runDataActiveRun', 'nodecg-speedcontrol');
+const stopWatchReplicant = nodecg.Replicant('timer', 'nodecg-speedcontrol');
 const socketRep = nodecg.Replicant('bingosocket', {'defaultValue':{'roomCode':null,'passphrase':null,'status':'disconnected'}});
 // always disconnected at startup, 
 socketRep.value.status = 'disconnected';
@@ -39,6 +40,9 @@ const noop = () => {}; // tslint:disable-line:no-empty
 // Prepare proper defaults for different bingo types
 currentRunRep.on('change',(newValue)=>{
 	if (!newValue) return;
+
+	// Hide board when new run starts
+	boardRep.value.boardHidden = true;
 	
 	var runnerIndex = 0;
 	for(var i = 0;i<newValue.teams.length;i++) {
@@ -55,6 +59,14 @@ currentRunRep.on('change',(newValue)=>{
 		} else if (bingotype.startsWith("blackout")) {
 			boardRep.value.goalCountShown = true;
 		}
+	}
+});
+
+stopWatchReplicant.on('change', function (newVal, oldVal) {
+	if (!newVal || !oldVal) return;
+	if (newVal.state == oldVal.state && newVal.state == "running") {
+		// unhide board when timer starts
+		boardRep.value.boardHidden = false;
 	}
 });
 

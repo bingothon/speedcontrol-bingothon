@@ -45,14 +45,16 @@ currentRunRep.on('change',(newValue)=>{
 	boardRep.value.boardHidden = true;
 	
 	var runnerIndex = 0;
-	for(var i = 0;i<newValue.teams.length;i++) {
-		var team = newValue.teams[i];
-		team.players.forEach(player => {
-			bingoColors.value[runnerIndex] = ALL_COLORS[i];
-			runnerIndex++;
-		});
+	if (newValue.teams) {
+		for(var i = 0;i<newValue.teams.length;i++) {
+			var team = newValue.teams[i];
+			team.players.forEach(player => {
+				bingoColors.value[runnerIndex] = ALL_COLORS[i];
+				runnerIndex++;
+			});
+		}
 	}
-	if (newValue.customData.Bingotype) {
+	if (newValue.customData && newValue.customData.Bingotype) {
 		var bingotype = newValue.customData.Bingotype;
 		if (bingotype.startsWith("single")) {
 			boardRep.value.goalCountShown = false;

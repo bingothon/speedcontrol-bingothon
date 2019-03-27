@@ -39,6 +39,13 @@
         "headerColor": "#008BB9"
       },
       {
+        "name": "obs-scene-control",
+        "title": "OBS Scene Remote Control",
+        "file": "OBSControl.html",
+        "width": 3,
+        "headerColor": "#008BB9"
+      },
+      {
         "name": "tiltify-dashboard",
         "title": "Tiltify Dashboard",
         "width": 2,

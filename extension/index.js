@@ -9,7 +9,7 @@ module.exports = function(nodecg) {
 	nodecgAPIContext.set(nodecg);
 
 	// set up Replicants here so they don't have to be declared multiple times
-	nodecg.Replicant('bingo-colors', {'persistent':false,'defaultValue':['red','red','red','red']});
+	nodecg.Replicant('bingo-colors', {'persistent':false,'defaultValue':[]});
 
 	// Other extension files we need to load.
 	require('./bingosync');

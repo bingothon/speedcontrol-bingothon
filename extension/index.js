@@ -18,6 +18,7 @@ module.exports = function(nodecg) {
 	require('./streams');
 	require('./finish-flags');
 	require('./obs')(nodecg);
+	require('./obsscenes');
 	
 	// nodecg-speedcontrol no longer sends forceRefreshIntermission so doing it here instead
 	var stopWatchReplicant = nodecg.Replicant('timer', 'nodecg-speedcontrol');

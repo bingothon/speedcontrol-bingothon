@@ -21,3 +21,6 @@
 	}
 }
 ```
+
+## nodecg-speedcontrol configuration
+Follow the instruction there, however choosing the correct, next layouts requires 2 custom columns under the schedule import: "Bingotype" and "Layout", bingotype is used to determine the order of scenes and layout is used to load the scenes like `{Layout}-{playercount}p-BINGO`, `INTERVIEW-{playercount}`

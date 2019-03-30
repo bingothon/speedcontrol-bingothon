@@ -7,6 +7,8 @@ $(()=>{
     var obsWebsocketRep = nodecg.Replicant('obs:websocket', bingothonBundleName);
     var obsPreviewScreenRep = nodecg.Replicant('obs:previewScene', bingothonBundleName);
     var obsStudioModeRep = nodecg.Replicant('obs:studioMode', bingothonBundleName);
+    var obsNextScenesRep = nodecg.Replicant('nextOBSScenes', bingothonBundleName, {defaultValue:[]});
+    var obsNextScenesNumRep = nodecg.Replicant('nextOBSScenesNum', bingothonBundleName, {defaultValue:0});
     // selectors
     var $mainControl = $('#obs-control');
     var $errorBox = $('#error-box');
@@ -68,13 +70,25 @@ $(()=>{
     $nextSceneSelect.on('change', function() {
         var nextScene = this.value;
         nodecg.sendMessage('obs:previewScene', nextScene).catch(err=>{
-            nodecg.log.error(`Failed to change scene to ${nextScene}`,err);
+            nodecg.log.error(`Failed to change previewScene to ${nextScene}`,err);
         });
     });
 
     $transButton.on('click',function() {
-        nodecg.sendMessage('obs:transition').catch(err => {
-            nodecg.log.error('failed to start Fade transition', err);
+        nodecg.sendMessage('obs:transition').then(()=>{
+            // transition completed, change preview scene to next one in the list, if there is any
+            // after transition is completed (has a transition effect)
+            setTimeout(()=>{ obsNextScenesNumRep.value++;}, 4000);
+        }).catch(err => {
+            nodecg.log.error('failed to start transition', err);
         });
     });
+
+    /** Consumes the message that suggests the next Scenes, unused atm
+     *
+    nodecg.listenFor('obsSceneSwitchSuggestion', (params, callback)=>{
+        obsNextScenesRep.value.scenes = params;
+        obsNextScenesRep.value.nextSceneNum = 0;
+        callback();
+    });*/
 });

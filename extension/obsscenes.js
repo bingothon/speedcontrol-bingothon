@@ -38,9 +38,9 @@ const bingoToScenes = {
 
 function formatToSceneName(rawSceneName, playerCount, layout) {
     if (rawSceneName == "bingo") {
-        return `${layout}-${playerCount}P-BINGO`;
+        return `${layout}-${playerCount}p-bingo`;
     } else if(rawSceneName == "interview") {
-        return `INTERVIEW-${playerCount}P`;
+        return `interview-${playerCount}p`;
     }
 }
 

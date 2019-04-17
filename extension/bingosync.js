@@ -38,8 +38,9 @@ let websocket = null;
 const noop = () => {}; // tslint:disable-line:no-empty
 
 // Prepare proper defaults for different bingo types
-currentRunRep.on('change',(newValue)=>{
-	if (!newValue) return;
+currentRunRep.on('change',(newValue, oldVal)=>{
+	// if there is no oldVal this was likely a server restart/hiccup
+	if (!newValue || !oldVal) return;
 
 	// Hide board when new run starts
 	boardRep.value.boardHidden = true;

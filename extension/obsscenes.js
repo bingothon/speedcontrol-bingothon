@@ -47,7 +47,7 @@ function formatToSceneName(rawSceneName, playerCount, layout) {
 // if a new run is played set scenes accordingly
 currentRunRep.on('change', newValue=>{
     // only update during the intermission scene, otherwise it's likely a server restart
-    if (obsProgramScreenRep.value.name != "intermission") return;
+    if (!obsProgramScreenRep.value || obsProgramScreenRep.value.name != "intermission") return;
     // safety check
     if (newValue.customData && newValue.customData.Layout && newValue.customData.Bingotype) {
         var bingotype = newValue.customData.Bingotype;

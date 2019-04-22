@@ -19,6 +19,7 @@
 				"url": {"type": "string", "default": "https://devdonations.bingothon.com"},
 				"eventSlug": {"type": "string", "default": "bingothon18"}
 			}
-		}
+		},
+		"esaRepeaterPostKey": {"type": "string", "default": "DEFAULT_KEY"}
 	}
 }

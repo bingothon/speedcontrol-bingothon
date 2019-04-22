@@ -18,7 +18,8 @@
 		"url":"https://devdonations.bingothon.com",
 		"enable":false,
 		"eventSlug":"bingothon18"
-	}
+	},
+	"esaRepeaterPostKey":"DEFAULT_KEY"
 }
 ```
 

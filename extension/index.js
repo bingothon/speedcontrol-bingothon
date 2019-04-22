@@ -47,4 +47,24 @@ module.exports = function(nodecg) {
 			]};
 		}
 	}
+
+	// POSTs FFZ featured channels changes to the repeater server.
+	var repeaterURL = 'https://repeater.esamarathon.com';
+	var request = require('request-promise').defaults({jar: true}); // Automatically saves and re-uses cookies.
+	var postKey = nodecg.bundleConfig.esaRepeaterPostKey || 'DEFAULT_KEY';
+	if (postKey && postKey !== 'DEFAULT_KEY') {
+		nodecg.listenFor('updateFFZFollowing', 'nodecg-speedcontrol', (usernames) => {
+			request.post({
+				url: repeaterURL+'/featured_channels?key='+postKey,
+				body: JSON.stringify({
+					channels: usernames
+				}),
+				headers: {'Content-Type': 'application/json; charset=utf-8'}
+			}).then(() => {
+				nodecg.log.info('Successfully sent featured channels to repeater server.');
+			}).catch(err => {
+				nodecg.log.warn('Failed to send featured channels to repeater server.');
+			});
+		});
+	}
 }

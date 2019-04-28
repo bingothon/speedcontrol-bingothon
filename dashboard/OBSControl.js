@@ -9,12 +9,16 @@ $(()=>{
     var obsStudioModeRep = nodecg.Replicant('obs:studioMode', bingothonBundleName);
     var obsNextScenesRep = nodecg.Replicant('nextOBSScenes', bingothonBundleName, {defaultValue:[]});
     var obsNextScenesNumRep = nodecg.Replicant('nextOBSScenesNum', bingothonBundleName, {defaultValue:0});
+    var obsDiscordAudioMuted = nodecg.Replicant('obsDiscordAudioMuted', {defaultValue:true});
+    var obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', {defaultValue:50});
     // selectors
     var $mainControl = $('#obs-control');
     var $errorBox = $('#error-box');
     var $nextSceneSelect = $('select#obs-preview-scene');
     var $currentScene = $('#obs-current-scene');
     var $transButton = $('#trans-button');
+    var $discordMuteButton = $('#discord-mute');
+    var $discordAudioSlider = $('#discord-volume');
 
     // util functions
     function showError(text) {
@@ -82,6 +86,24 @@ $(()=>{
         }).catch(err => {
             nodecg.log.error('failed to start transition', err);
         });
+    });
+
+    // handle discord mute
+    $discordMuteButton.on('click', ()=>{
+        obsDiscordAudioMuted.value = !obsDiscordAudioMuted.value;
+    })
+
+    obsDiscordAudioMuted.on('change', newVal => {
+        $discordMuteButton.text(newVal?"Unmute":"Mute");
+    });
+
+    // handle discord audio volume
+    $discordAudioSlider.on('change', event=>{
+        obsDiscordAudioLevel.value = parseInt(event.target.value);
+    });
+
+    obsDiscordAudioLevel.on('change', newVal => {
+        $discordAudioSlider.val(newVal);
     });
 
     /** Consumes the message that suggests the next Scenes, unused atm

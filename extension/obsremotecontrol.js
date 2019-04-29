@@ -85,36 +85,62 @@ obsWebsocketRep.on('change',newVal=>{
         }
     });
 
-    // set the audio depending on the replicant
-    obsDiscordAudioMuted.on('change',(newVal)=>{
-        obsutility.send('SetMute',{source:discordAudioSource, mute:newVal})
-            .then(()=>{nodecg.log.info('discord muting set to '+newVal)})
-            .catch((err)=>nodecg.log.error('error setting discord mute', err));
-    });
+    // update replicant based on the value in OBS, then register change listener for replicant to send updates to OBS
+    obsutility.send('GetMute',{source:discordAudioSource})
+        .then(data => {
+            obsDiscordAudioMuted.value = data.muted;
+            obsDiscordAudioMuted.on('change',(newVal)=>{
+                obsutility.send('SetMute',{source:discordAudioSource, mute:newVal})
+                    .then(()=>{nodecg.log.info('discord muting set to '+newVal)})
+                    .catch((err)=>nodecg.log.error('error setting discord mute', err));
+            });
+        })
+        .catch(err => nodecg.log.error('error getting discord mute',err));
+    
+    
+    obsutility.send('GetVolume',{source:discordAudioSource})
+        .then(data => {
+            obsDiscordAudioLevel.value = data.volume*100;
+            obsDiscordAudioLevel.on('change',(newVal)=>{
+                obsutility.send('SetVolume',{source:discordAudioSource, volume:newVal/100})
+                    .then(()=>{nodecg.log.info('discord volume set to '+newVal)})
+                    .catch((err)=>nodecg.log.error('error setting discord volume level',err));
+            });
+        })
+        .catch(err => nodecg.log.error('error getting discord volume',err));
+    
+    obsutility.send('GetSyncOffset',{source:discordAudioSource})
+        .then(data => {
+            obsDiscordAudioDelay.value = data.offset/1000000;
+            obsDiscordAudioDelay.on('change',newVal=>{                      // offset is in nanoseconds
+                obsutility.send('SetSyncOffset', {source:discordAudioSource, offset:newVal*1000000})
+                    .then(() => nodecg.log.info('discord audio delay set to '+newVal+'ms'))
+                    .catch(err => nodecg.log.error('error setting discord audio delay',err));
+            });
+        })
+        .catch(err => nodecg.log.error('error getting discord delay',err));
 
-    obsDiscordAudioLevel.on('change',(newVal)=>{
-        obsutility.send('SetVolume',{source:discordAudioSource, volume:newVal/100})
-            .then(()=>{nodecg.log.info('discord volume set to '+newVal)})
-            .catch((err)=>nodecg.log.error('error setting discord volume level',err));
-    });
+    obsutility.send('GetMute',{source:nodecgAudioSource})
+        .then(data => {
+            obsNodecgAudioMuted.value = data.muted;
+            obsNodecgAudioMuted.on('change',(newVal)=>{
+                obsutility.send('SetMute',{source:nodecgAudioSource, mute:newVal})
+                    .then(()=>{nodecg.log.info('nodecg muting set to '+newVal)})
+                    .catch((err)=>nodecg.log.error('error setting nodecg mute', err));
+            });
+        })
+        .catch(err => nodecg.log.error('error getting nodecg mute',err));
 
-    obsDiscordAudioDelay.on('change',newVal=>{                      // offset is in nanoseconds
-        obsutility.send('SetSyncOffset', {source:discordAudioSource, offset:newVal*1000000})
-            .then(() => nodecg.log.info('discord audio delay set to '+newVal+'ms'))
-            .catch(err => nodecg.log.error('error setting discord audio delay',err));
-    });
-
-    obsNodecgAudioMuted.on('change',(newVal)=>{
-        obsutility.send('SetMute',{source:nodecgAudioSource, mute:newVal})
-            .then(()=>{nodecg.log.info('nodecg muting set to '+newVal)})
-            .catch((err)=>nodecg.log.error('error setting nodecg mute', err));
-    });
-
-    obsNodecgAudioLevel.on('change',(newVal)=>{
-        obsutility.send('SetVolume',{source:nodecgAudioSource, volume:newVal/100})
-            .then(()=>{nodecg.log.info('nodecg volume set to '+newVal)})
-            .catch((err)=>nodecg.log.error('error setting nodecg volume level',err));
-    });
+    obsutility.send('GetVolume',{source:nodecgAudioSource})
+        .then(data => {
+            obsNodecgAudioLevel.value = data.volume*100;
+            obsNodecgAudioLevel.on('change',(newVal)=>{
+                obsutility.send('SetVolume',{source:nodecgAudioSource, volume:newVal/100})
+                    .then(()=>{nodecg.log.info('nodecg volume set to '+newVal)})
+                    .catch((err)=>nodecg.log.error('error setting nodecg volume level',err));
+            });
+        })
+        .catch(err => nodecg.log.error('error getting nodecg volume level',err));
     // update replicant for changes, doesn't work for some reason
     /*obsutility.on('SourceVolumeChanged', data => {
         nodecg.log.info('changed source volue',data);

@@ -46,13 +46,6 @@
         "headerColor": "#008BB9"
       },
       {
-        "name": "tiltify-dashboard",
-        "title": "Tiltify Dashboard",
-        "width": 2,
-        "file": "TiltifyDashboard.html",
-        "headerColor": "#008BB9"
-      },
-      {
         "name": "twitch-player-control",
         "title": "Twitch Player",
         "width": 2,

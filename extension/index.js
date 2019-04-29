@@ -17,8 +17,7 @@ module.exports = function(nodecg) {
 	require('./twitch-chat-bot');
 	require('./streams');
 	require('./finish-flags');
-	const obs = require('./obs')(nodecg);
-	require('./obsscenes')(obs);
+	require('./obsremotecontrol');
 	
 	// nodecg-speedcontrol no longer sends forceRefreshIntermission so doing it here instead
 	var stopWatchReplicant = nodecg.Replicant('timer', 'nodecg-speedcontrol');

@@ -20,7 +20,8 @@
 		"eventSlug":"bingothon18"
 	},
 	"obs":{
-		"discordAudio":"Source for discord audio"
+		"discordAudio":"Source for discord audio",
+		"nodecgAudio":"Source for nodecg audio, desktop monitor"
 	}
 	"esaRepeaterPostKey":"DEFAULT_KEY"
 }
@@ -30,4 +31,4 @@
 Follow the instruction there, however choosing the correct, next layouts requires 2 custom columns under the schedule import: "Bingotype" and "Layout", bingotype is used to determine the order of scenes and layout is used to load the scenes like `{Layout}-{playercount}p-BINGO`, `INTERVIEW-{playercount}`
 
 ## OBS config
-Choose the names of the sources, the discord Audio is picked up from, this is seperated from the normal desktop audio to make it possible to seperate them
+Choose the names of the sources, the discord Audio is picked up from, this is seperated from the normal desktop audio (named nodecgAudio in the config) to make it possible to seperate them

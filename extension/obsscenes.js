@@ -5,6 +5,9 @@ module.exports = function(obsutility) {
     var obsNextScenesNumRep = nodecg.Replicant('nextOBSScenesNum', {defaultValue:0});
     var obsDiscordAudioMuted = nodecg.Replicant('obsDiscordAudioMuted', {defaultValue:true});
     var obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', {defaultValue:50});
+    var obsDiscordAudioDelay = nodecg.Replicant('obsDiscordAudioDelay', {defaultValue:0});
+    var obsNodecgAudioMuted = nodecg.Replicant('obsNodecgAudioMuted', {defaultValue:true});
+    var obsNodecgAudioLevel = nodecg.Replicant('obsNodecgAudioLevel', {defaultValue:100});
 
     var obsProgramScreenRep = nodecg.Replicant('obs:programScene');
     var obsWebsocketRep = nodecg.Replicant('obs:websocket');
@@ -12,8 +15,13 @@ module.exports = function(obsutility) {
     // current run replicant
     const currentRunRep = nodecg.Replicant('runDataActiveRun', 'nodecg-speedcontrol');
 
-    // scene names from settings
+    // scene names from settings, if obs isn't defined this isn't going to work
+    if (!nodecg.bundleConfig.obs) {
+        nodecg.log.error('No OBS properties defined in config, scene changes & audio WILL NOT work');
+        return;
+    }
     var discordAudioSource = nodecg.bundleConfig.obs.discordAudio;
+    var nodecgAudioSource = nodecg.bundleConfig.obs.nodecgAudio;
 
     var initialized = false;
 
@@ -75,17 +83,33 @@ module.exports = function(obsutility) {
         // set the audio depending on the replicant
         obsDiscordAudioMuted.on('change',(newVal)=>{
             obsutility.send('SetMute',{source:discordAudioSource, mute:newVal})
-                .then(()=>{nodecg.log.info('muting set to '+newVal)})
-                .catch((err)=>nodecg.log.error('error setting mute', err));
+                .then(()=>{nodecg.log.info('discord muting set to '+newVal)})
+                .catch((err)=>nodecg.log.error('error setting discord mute', err));
         });
     
-        // set the audio depending on the replicant
         obsDiscordAudioLevel.on('change',(newVal)=>{
             obsutility.send('SetVolume',{source:discordAudioSource, volume:newVal/100})
-                .then(()=>{nodecg.log.info('volume set to '+newVal)})
-                .catch((err)=>nodecg.log.error('error setting volume level',err));
+                .then(()=>{nodecg.log.info('discord volume set to '+newVal)})
+                .catch((err)=>nodecg.log.error('error setting discord volume level',err));
         });
 
+        obsDiscordAudioDelay.on('change',newVal=>{                      // offset is in nanoseconds
+            obsutility.send('SetSyncOffset', {source:discordAudioSource, offset:newVal*1000000})
+                .then(() => nodecg.log.info('discord audio delay set to '+newVal+'ms'))
+                .catch(err => nodecg.log.error('error setting discord audio delay',err));
+        });
+    
+        obsNodecgAudioMuted.on('change',(newVal)=>{
+            obsutility.send('SetMute',{source:nodecgAudioSource, mute:newVal})
+                .then(()=>{nodecg.log.info('nodecg muting set to '+newVal)})
+                .catch((err)=>nodecg.log.error('error setting nodecg mute', err));
+        });
+    
+        obsNodecgAudioLevel.on('change',(newVal)=>{
+            obsutility.send('SetVolume',{source:nodecgAudioSource, volume:newVal/100})
+                .then(()=>{nodecg.log.info('nodecg volume set to '+newVal)})
+                .catch((err)=>nodecg.log.error('error setting nodecg volume level',err));
+        });
         // update replicant for changes, doesn't work for some reason
         /*obsutility.on('SourceVolumeChanged', data => {
             nodecg.log.info('changed source volue',data);

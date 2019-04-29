@@ -9,8 +9,11 @@ $(()=>{
     var obsStudioModeRep = nodecg.Replicant('obs:studioMode', bingothonBundleName);
     var obsNextScenesRep = nodecg.Replicant('nextOBSScenes', bingothonBundleName, {defaultValue:[]});
     var obsNextScenesNumRep = nodecg.Replicant('nextOBSScenesNum', bingothonBundleName, {defaultValue:0});
-    var obsDiscordAudioMuted = nodecg.Replicant('obsDiscordAudioMuted', {defaultValue:true});
-    var obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', {defaultValue:50});
+    var obsDiscordAudioMuted = nodecg.Replicant('obsDiscordAudioMuted', bingothonBundleName, {defaultValue:true});
+    var obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', bingothonBundleName, {defaultValue:100});
+    var obsDiscordAudioDelay = nodecg.Replicant('obsDiscordAudioDelay', bingothonBundleName, {defaultValue:0});
+    var obsNodecgAudioMuted = nodecg.Replicant('obsNodecgAudioMuted', bingothonBundleName, {defaultValue:true});
+    var obsNodecgAudioLevel = nodecg.Replicant('obsNodecgAudioLevel', bingothonBundleName, {defaultValue:100});
     // selectors
     var $mainControl = $('#obs-control');
     var $errorBox = $('#error-box');
@@ -19,6 +22,9 @@ $(()=>{
     var $transButton = $('#trans-button');
     var $discordMuteButton = $('#discord-mute');
     var $discordAudioSlider = $('#discord-volume');
+    var $discordDelay = $('#discord-delay');
+    var $nodecgMuteButton = $('#nodecg-mute');
+    var $nodecgAudioSlider = $('#nodecg-volume');
 
     // util functions
     function showError(text) {
@@ -104,6 +110,33 @@ $(()=>{
 
     obsDiscordAudioLevel.on('change', newVal => {
         $discordAudioSlider.val(newVal);
+    });
+
+    // handle discord delay
+    $discordDelay.on('change', event => {
+        obsDiscordAudioDelay.value = parseInt(event.target.value);
+    });
+
+    obsDiscordAudioDelay.on('change', newVal => {
+        $discordDelay.val(newVal);
+    });
+
+    // handle nodecg mute
+    $nodecgMuteButton.on('click', ()=>{
+        obsNodecgAudioMuted.value = !obsNodecgAudioMuted.value;
+    })
+
+    obsNodecgAudioMuted.on('change', newVal => {
+        $nodecgMuteButton.text(newVal?"Unmute":"Mute");
+    });
+
+    // handle nodecg audio volume
+    $nodecgAudioSlider.on('change', event=>{
+        obsNodecgAudioLevel.value = parseInt(event.target.value);
+    });
+
+    obsNodecgAudioLevel.on('change', newVal => {
+        $nodecgAudioSlider.val(newVal);
     });
 
     /** Consumes the message that suggests the next Scenes, unused atm

@@ -23,7 +23,8 @@
 		"obs": {
 			"type":"object",
 			"properties": {
-				"discordAudio": {"type":"string", "default":"Desktop-Audio"}
+				"discordAudio": {"type":"string", "default":"Discord-Audio"},
+				"nodecgAudio": {"type":"string", "default":"Desktop-Audio"}
 			}
 		},
 		"esaRepeaterPostKey": {"type": "string", "default": "DEFAULT_KEY"}

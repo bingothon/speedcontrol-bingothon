@@ -62,7 +62,7 @@ module.exports = function(nodecg) {
 			}).then(() => {
 				nodecg.log.info('Successfully sent featured channels to repeater server.');
 			}).catch(err => {
-				nodecg.log.warn('Failed to send featured channels to repeater server.');
+				nodecg.log.warn('Failed to send featured channels to repeater server.', err);
 			});
 		});
 	}

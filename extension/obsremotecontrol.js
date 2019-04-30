@@ -53,9 +53,9 @@ const bingoToScenes = {
 
 function formatToSceneName(rawSceneName, playerCount, layout) {
     if (rawSceneName == "bingo") {
-        return `${layout}-${playerCount}p-bingo`;
+        return `${layout.replace('_','x')} - ${playerCount} player layout`;
     } else if(rawSceneName == "interview") {
-        return `interview-${playerCount}p`;
+        return `Interview - ${playerCount} player layout`;
     }
 }
 
@@ -79,7 +79,7 @@ obsWebsocketRep.on('change',newVal=>{
     // if a new run is played set scenes accordingly
     currentRunRep.on('change', newValue=>{
         // only update during the intermission scene, otherwise it's likely a server restart
-        if (!obsProgramScreenRep.value || !obsProgramScreenRep.value.name.startsWith("intermission")) return;
+        if (!obsProgramScreenRep.value || !obsProgramScreenRep.value.name.startsWith("Intermission")) return;
         // safety check
         if (newValue.customData && newValue.customData.Layout && newValue.customData.Bingotype) {
             var bingotype = newValue.customData.Bingotype;
@@ -91,7 +91,7 @@ obsWebsocketRep.on('change',newVal=>{
             }
             var playerCount = newValue.teams.flatMap(team => team.players).length;
             var scenes = rawScenes.map(scene => formatToSceneName(scene, playerCount, layout));
-            scenes.push("intermission (ads)");// help ESA!
+            scenes.push("Intermission (ads)");// help ESA!
             obsNextScenesRep.value = scenes;
             // trigger preview switch
             obsNextScenesNumRep.value = -1;
@@ -167,26 +167,26 @@ obsWebsocketRep.on('change',newVal=>{
                 voiceDelayRep.value = 0;
             }
             // if going to a game screen, unmute the game, otherwise mute
-            if (nextScene.includes('bingo')) {
+            if (nextScene.includes('x')) {
                 soundOnTwitchStream.value = 0;
             } else {
                 soundOnTwitchStream.value = -1;
             }
             // if the next scene isn't intermission unmute discord
-            if (nextScene.includes('intermission')) {
+            if (nextScene.includes('Intermission')) {
                 obsDiscordAudioMuted.value = true;
             } else {
                 obsDiscordAudioMuted.value = false;
             }
         } else if(streamMode == RACER_AUDIO_ONLY) {
             // use player audio
-            if (nextScene.includes('bingo')) {
+            if (nextScene.includes('x')) {
                 soundOnTwitchStream.value = 0;
             } else {
                 soundOnTwitchStream.value = -1;
             }
             // discord muted exept for interview
-            if (nextScene.includes('interview')) {
+            if (nextScene.includes('Interview')) {
                 obsDiscordAudioMuted.value = false;
             } else {
                 obsDiscordAudioMuted.value = true;

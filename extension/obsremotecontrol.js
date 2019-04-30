@@ -179,13 +179,17 @@ obsWebsocketRep.on('change',newVal=>{
                 obsDiscordAudioMuted.value = false;
             }
         } else if(streamMode == RACER_AUDIO_ONLY) {
-            // discord audio muted for that one
-            obsDiscordAudioMuted.value = true;
-            // use player audio for interview as well, TODO that wont work, fix
-            if (nextScene.includes('intermission')) {
-                soundOnTwitchStream.value = -1;
-            } else {
+            // use player audio
+            if (nextScene.includes('bingo')) {
                 soundOnTwitchStream.value = 0;
+            } else {
+                soundOnTwitchStream.value = -1;
+            }
+            // discord muted exept for interview
+            if (nextScene.includes('interview')) {
+                obsDiscordAudioMuted.value = false;
+            } else {
+                obsDiscordAudioMuted.value = true;
             }
         } else {
             nodecg.log.error('Unknown stream configuration: '+streamMode);
@@ -208,19 +212,16 @@ obsWebsocketRep.on('change',newVal=>{
     obsStreamMode.on('change', newVal=>{
         // change in current scene
         handleScreenStreamModeChange(newVal, obsProgramScreenRep.value.name);
-    })
+    });
 
     streamDelay.on('change',newVal=>{
         if (obsStreamMode.value != EXTERNAL_COMMENTARY) {
             // if it's not external commentary figure out delay, if it's not a significant change (<2sek) don't update
             var leadStreamDelay = newVal[soundOnTwitchStream.value];
             if (Math.abs(leadStreamDelay*1000 - voiceDelayRep.value) > 2000) {
-                // delay display 
+                // delay display and discord (even if it's muted most of the time)
                 voiceDelayRep.value = leadStreamDelay * 1000;
-                // if it's runner commentary and not stream audio only, delay discord audio
-                if (obsStreamMode.value == RUNNER_COMMENTARY) {
-                    obsDiscordAudioDelay.value = leadStreamDelay * 1000;
-                }
+                obsDiscordAudioDelay.value = leadStreamDelay * 1000;
             }
         }
     });

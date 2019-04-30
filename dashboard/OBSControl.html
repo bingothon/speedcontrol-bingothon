@@ -9,9 +9,15 @@
 	<body>
         <div id="error-box"></div>
         <div id="obs-control"><div>Next Scene:<select id="obs-preview-scene"><option>16_9-4P-BINGO</option></select></div><div>Current Scene: <span id="obs-current-scene">Intermission</span></div>
-        <div><button id="trans-button">Transition now</button></div></div>
+        <div><button id="trans-button">Transition now</button></div>
 	<div>Discord Audio:<button id="discord-mute">--init--</button><span>Vol: </span><input id="discord-volume" type="range" min="0" max="100" value="100"></div>
 	<div>Discord Audio delay (in ms, auto updated):<input id="discord-delay" type="number" value="0"></div>
-        <div>NodeCG Audio:<button id="nodecg-mute">--init--</button><span>Vol: </span><input id="nodecg-volume" type="range" min="0" max="100" value="100"></div>
+	<div>NodeCG Audio:<button id="nodecg-mute">--init--</button><span>Vol: </span><input id="nodecg-volume" type="range" min="0" max="100" value="100"></div>
+	<br>
+	<div><select id="commentary-setting-select">
+		<option value="external-commentary">External Commentary</option>
+		<option value="runner-commentary">Runner Commentary</option>
+		<option value="racer-audio-only">Racer Audio Only</option>
+	</select><button id="commentary-setting-button">Set commentary mode</button></div></div>
 	</body>
 </html>

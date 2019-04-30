@@ -14,6 +14,7 @@ $(()=>{
     var obsDiscordAudioDelay = nodecg.Replicant('obsDiscordAudioDelay', bingothonBundleName, {defaultValue:0});
     var obsNodecgAudioMuted = nodecg.Replicant('obsNodecgAudioMuted', bingothonBundleName, {defaultValue:true});
     var obsNodecgAudioLevel = nodecg.Replicant('obsNodecgAudioLevel', bingothonBundleName, {defaultValue:100});
+    var obsStreamMode = nodecg.Replicant('obsStreamMode', bingothonBundleName, {defaultValue:"external-commentary"});// external-commentary,racer-commentary or racer-audio-only
     // selectors
     var $mainControl = $('#obs-control');
     var $errorBox = $('#error-box');
@@ -131,6 +132,10 @@ $(()=>{
 
     obsNodecgAudioLevel.on('change', newVal => {
         $nodecgAudioSlider.val(newVal);
+    });
+
+    $('#commentary-setting-button').on('click',()=>{
+        obsStreamMode.value = $('#commentary-setting-select').val();
     });
 
     /** Consumes the message that suggests the next Scenes, unused atm

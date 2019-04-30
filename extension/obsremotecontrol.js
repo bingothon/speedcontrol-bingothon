@@ -6,29 +6,34 @@ const {OBSUtility} = require('nodecg-utility-obs');
 const obsutility = new OBSUtility(nodecg);
 
 // next scenes replicants
-var obsNextScenesRep = nodecg.Replicant('nextOBSScenes', {defaultValue:[]});
-var obsNextScenesNumRep = nodecg.Replicant('nextOBSScenesNum', {defaultValue:0});
-var obsDiscordAudioMuted = nodecg.Replicant('obsDiscordAudioMuted', {defaultValue:true});
-var obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', {defaultValue:50});
-var obsDiscordAudioDelay = nodecg.Replicant('obsDiscordAudioDelay', {defaultValue:0});
-var obsNodecgAudioMuted = nodecg.Replicant('obsNodecgAudioMuted', {defaultValue:true});
-var obsNodecgAudioLevel = nodecg.Replicant('obsNodecgAudioLevel', {defaultValue:100});
+const obsNextScenesRep = nodecg.Replicant('nextOBSScenes', {defaultValue:[]});
+const obsNextScenesNumRep = nodecg.Replicant('nextOBSScenesNum', {defaultValue:0});
+const obsDiscordAudioMuted = nodecg.Replicant('obsDiscordAudioMuted', {defaultValue:true});
+const obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', {defaultValue:50});
+const obsDiscordAudioDelay = nodecg.Replicant('obsDiscordAudioDelay', {defaultValue:0});
+const obsNodecgAudioMuted = nodecg.Replicant('obsNodecgAudioMuted', {defaultValue:true});
+const obsNodecgAudioLevel = nodecg.Replicant('obsNodecgAudioLevel', {defaultValue:100});
 // delay in ms
 const voiceDelayRep = nodecg.Replicant('voiceDelay', {defaultValue: 0, persistent: true});
-var soundOnTwitchStream = nodecg.Replicant('sound-on-twitch-stream', {'persistent':false,'defaultValue':-1});
+const soundOnTwitchStream = nodecg.Replicant('sound-on-twitch-stream', {defaultValue:-1});
+const streamDelay = nodecg.Replicant('stream-delay',{'defaultValue':[0,0,0,0], 'persistent':false});
 // this value indicates the current "mode" a few things have to be set in;
 // There are 3 different modes depending on who provides the audio:
 // 1. external commentary, the racers are not in the call, that means no delay for the voice
 // 2. racer commentary but we capture discord audio, audio needs to be delayed by stream delay, but we can handle audio balance
 // 3. racers stream all audio, only delay the discord display and mute our discord audio capture, problematic with interview
-var obsStreamMode = nodecg.Replicant('obsStreamMode', {defaultValue:"external-commentary"});// external-commentary,racer-commentary or racer-audio-only
+const obsStreamMode = nodecg.Replicant('obsStreamMode', {defaultValue:"external-commentary"});// external-commentary,racer-commentary or racer-audio-only
 
-var obsProgramScreenRep = nodecg.Replicant('obs:programScene');
-var obsPreviewScreenRep = nodecg.Replicant('obs:previewScene');
-var obsWebsocketRep = nodecg.Replicant('obs:websocket');
+const obsProgramScreenRep = nodecg.Replicant('obs:programScene');
+const obsPreviewScreenRep = nodecg.Replicant('obs:previewScene');
+const obsWebsocketRep = nodecg.Replicant('obs:websocket');
 
 // current run replicant
 const currentRunRep = nodecg.Replicant('runDataActiveRun', 'nodecg-speedcontrol');
+
+const EXTERNAL_COMMENTARY = 'external-commentary';
+const RUNNER_COMMENTARY = 'runner-commentary';
+const RACER_AUDIO_ONLY = 'racer-audio-only';
 
 // scene names from settings, if obs isn't defined this isn't going to work
 if (!nodecg.bundleConfig.obs) {
@@ -151,17 +156,16 @@ obsWebsocketRep.on('change',newVal=>{
             });
         })
         .catch(err => nodecg.log.error('error getting nodecg volume level',err));
-
-    // catches the event when the user triggers the switch to the next scene
-    nodecg.listenFor('obsTransitionToNextScene',()=>{
-
-        var nextScene = obsPreviewScreenRep.value.name;
-
+    
+    // handle both stream mode and scene change
+    function handleScreenStreamModeChange(streamMode, nextScene) {
         // depending on the next scene and which mode is used set some stuff automagically
-        if (obsStreamMode.value == 'external-commentary') {
+        if (streamMode == EXTERNAL_COMMENTARY || streamMode == RUNNER_COMMENTARY) {
             // if commentary is external no delay is necessary
-            obsDiscordAudioDelay.value = 0;
-            voiceDelayRep.value = 0;
+            if (obsStreamMode.value == EXTERNAL_COMMENTARY) {
+                obsDiscordAudioDelay.value = 0;
+                voiceDelayRep.value = 0;
+            }
             // if going to a game screen, unmute the game, otherwise mute
             if (nextScene.includes('bingo')) {
                 soundOnTwitchStream.value = 0;
@@ -174,12 +178,51 @@ obsWebsocketRep.on('change',newVal=>{
             } else {
                 obsDiscordAudioMuted.value = false;
             }
+        } else if(streamMode == RACER_AUDIO_ONLY) {
+            // discord audio muted for that one
+            obsDiscordAudioMuted.value = true;
+            // use player audio for interview as well, TODO that wont work, fix
+            if (nextScene.includes('intermission')) {
+                soundOnTwitchStream.value = -1;
+            } else {
+                soundOnTwitchStream.value = 0;
+            }
+        } else {
+            nodecg.log.error('Unknown stream configuration: '+streamMode);
         }
+    }
+
+    // catches the event when the user triggers the switch to the next scene
+    nodecg.listenFor('obsTransitionToNextScene',()=>{
+
+        var nextScene = obsPreviewScreenRep.value.name;
+        // prepare for next scene
+        handleScreenStreamModeChange(obsStreamMode.value, nextScene);
 
         nodecg.sendMessage('obs:transition');
         // transition completed, change preview scene to next one in the list, if there is any
         // after transition is completed (has a transition effect)
         setTimeout(()=>{ obsNextScenesNumRep.value++;}, 4000);
+    });
+
+    obsStreamMode.on('change', newVal=>{
+        // change in current scene
+        handleScreenStreamModeChange(newVal, obsProgramScreenRep.value.name);
+    })
+
+    streamDelay.on('change',newVal=>{
+        if (obsStreamMode.value != EXTERNAL_COMMENTARY) {
+            // if it's not external commentary figure out delay, if it's not a significant change (<2sek) don't update
+            var leadStreamDelay = newVal[soundOnTwitchStream.value];
+            if (Math.abs(leadStreamDelay*1000 - voiceDelayRep.value) > 2000) {
+                // delay display 
+                voiceDelayRep.value = leadStreamDelay * 1000;
+                // if it's runner commentary and not stream audio only, delay discord audio
+                if (obsStreamMode.value == RUNNER_COMMENTARY) {
+                    obsDiscordAudioDelay.value = leadStreamDelay * 1000;
+                }
+            }
+        }
     });
     // update replicant for changes, doesn't work for some reason
     /*obsutility.on('SourceVolumeChanged', data => {

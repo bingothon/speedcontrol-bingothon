@@ -1,7 +1,7 @@
 'use-strict'
 $(()=>{
     // keeps track of which channel has sound, cause only one at a time can have sound, -1 is all muted
-    var soundOnTwitchStream = nodecg.Replicant('sound-on-twitch-stream', {'persistent':false,'defaultValue':-1});
+    var soundOnTwitchStream = nodecg.Replicant('sound-on-twitch-stream', {defaultValue:-1});
     // main control panel for streams
     var streams = nodecg.Replicant('twitch-streams');
     // stores all quality options available

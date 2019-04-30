@@ -13,8 +13,18 @@ var obsDiscordAudioLevel = nodecg.Replicant('obsDiscordAudioLevel', {defaultValu
 var obsDiscordAudioDelay = nodecg.Replicant('obsDiscordAudioDelay', {defaultValue:0});
 var obsNodecgAudioMuted = nodecg.Replicant('obsNodecgAudioMuted', {defaultValue:true});
 var obsNodecgAudioLevel = nodecg.Replicant('obsNodecgAudioLevel', {defaultValue:100});
+// delay in ms
+const voiceDelayRep = nodecg.Replicant('voiceDelay', {defaultValue: 0, persistent: true});
+var soundOnTwitchStream = nodecg.Replicant('sound-on-twitch-stream', {'persistent':false,'defaultValue':-1});
+// this value indicates the current "mode" a few things have to be set in;
+// There are 3 different modes depending on who provides the audio:
+// 1. external commentary, the racers are not in the call, that means no delay for the voice
+// 2. racer commentary but we capture discord audio, audio needs to be delayed by stream delay, but we can handle audio balance
+// 3. racers stream all audio, only delay the discord display and mute our discord audio capture, problematic with interview
+var obsStreamMode = nodecg.Replicant('obsStreamMode', {defaultValue:"external-commentary"});// external-commentary,racer-commentary or racer-audio-only
 
 var obsProgramScreenRep = nodecg.Replicant('obs:programScene');
+var obsPreviewScreenRep = nodecg.Replicant('obs:previewScene');
 var obsWebsocketRep = nodecg.Replicant('obs:websocket');
 
 // current run replicant
@@ -64,7 +74,7 @@ obsWebsocketRep.on('change',newVal=>{
     // if a new run is played set scenes accordingly
     currentRunRep.on('change', newValue=>{
         // only update during the intermission scene, otherwise it's likely a server restart
-        if (!obsProgramScreenRep.value || obsProgramScreenRep.value.name != "intermission") return;
+        if (!obsProgramScreenRep.value || !obsProgramScreenRep.value.name.startsWith("intermission")) return;
         // safety check
         if (newValue.customData && newValue.customData.Layout && newValue.customData.Bingotype) {
             var bingotype = newValue.customData.Bingotype;
@@ -76,7 +86,7 @@ obsWebsocketRep.on('change',newVal=>{
             }
             var playerCount = newValue.teams.flatMap(team => team.players).length;
             var scenes = rawScenes.map(scene => formatToSceneName(scene, playerCount, layout));
-            scenes.push("intermission");
+            scenes.push("intermission (ads)");// help ESA!
             obsNextScenesRep.value = scenes;
             // trigger preview switch
             obsNextScenesNumRep.value = -1;
@@ -141,6 +151,36 @@ obsWebsocketRep.on('change',newVal=>{
             });
         })
         .catch(err => nodecg.log.error('error getting nodecg volume level',err));
+
+    // catches the event when the user triggers the switch to the next scene
+    nodecg.listenFor('obsTransitionToNextScene',()=>{
+
+        var nextScene = obsPreviewScreenRep.value.name;
+
+        // depending on the next scene and which mode is used set some stuff automagically
+        if (obsStreamMode.value == 'external-commentary') {
+            // if commentary is external no delay is necessary
+            obsDiscordAudioDelay.value = 0;
+            voiceDelayRep.value = 0;
+            // if going to a game screen, unmute the game, otherwise mute
+            if (nextScene.includes('bingo')) {
+                soundOnTwitchStream.value = 0;
+            } else {
+                soundOnTwitchStream.value = -1;
+            }
+            // if the next scene isn't intermission unmute discord
+            if (nextScene.includes('intermission')) {
+                obsDiscordAudioMuted.value = true;
+            } else {
+                obsDiscordAudioMuted.value = false;
+            }
+        }
+
+        nodecg.sendMessage('obs:transition');
+        // transition completed, change preview scene to next one in the list, if there is any
+        // after transition is completed (has a transition effect)
+        setTimeout(()=>{ obsNextScenesNumRep.value++;}, 4000);
+    });
     // update replicant for changes, doesn't work for some reason
     /*obsutility.on('SourceVolumeChanged', data => {
         nodecg.log.info('changed source volue',data);

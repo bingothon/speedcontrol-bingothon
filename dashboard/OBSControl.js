@@ -85,13 +85,7 @@ $(()=>{
     });
 
     $transButton.on('click',function() {
-        nodecg.sendMessage('obs:transition').then(()=>{
-            // transition completed, change preview scene to next one in the list, if there is any
-            // after transition is completed (has a transition effect)
-            setTimeout(()=>{ obsNextScenesNumRep.value++;}, 4000);
-        }).catch(err => {
-            nodecg.log.error('failed to start transition', err);
-        });
+        nodecg.sendMessage('obsTransitionToNextScene');
     });
 
     // handle discord mute

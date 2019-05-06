@@ -36,6 +36,23 @@ let fullUpdateInterval;
 let websocket = null;
 
 const noop = () => {}; // tslint:disable-line:no-empty
+const bingoCombinations = [
+	// rows
+	[0,1,2,3,4],
+	[5,6,7,8,9],
+	[10,11,12,13,14],
+	[15,16,17,18,19],
+	[20,21,22,23,24],
+	// columns
+	[0,5,10,15,20],
+	[1,6,11,16,21],
+	[2,7,12,17,22],
+	[3,8,13,18,23],
+	[4,9,14,19,24],
+	// diagonals
+	[0,6,12,18,24],
+	[4,8,12,16,20],
+];
 
 // Prepare proper defaults for different bingo types
 currentRunRep.on('change',(newValue, oldVal)=>{
@@ -365,12 +382,43 @@ function createWebsocket(socketUrl, socketKey) {
 
 			if (json.type === 'goal') {
 				const index = parseInt(json.square.slot.slice(4), 10) - 1;
+				const color = json.color;
 				boardRep.value.cells[index] = json.square;
 				// update goal count
 				if (json.remove) {
-					boardRep.value.goalCounts[json.color]--;
+					boardRep.value.goalCounts[color]--;
 				} else {
-					boardRep.value.goalCounts[json.color]++;
+					boardRep.value.goalCounts[color]++;
+				}
+				// check if this is a bingo or not, but find out the type first
+				if (!json.remove && currentRunRep.value.customData && currentRunRep.value.customData.Bingotype) {
+					var bingotype = currentRunRep.value.customData.Bingotype;
+					var bingos=0;
+					if (bingotype.includes('single') || bingotype.includes('double') || bingotype.includes('triple')) {
+						for(var i = 0;i<bingoCombinations.length;i++) {
+							if (bingoCombinations[i].includes(index)) {
+								if (bingoCombinations[i].every(idx=>boardRep.value.cells[idx].colors.includes(color))) {
+									// BINGO!, potentially there are more than one bingo at the same time
+									bingos++;
+								}
+							}
+						}
+					} else if(bingotype.includes('lockout')) {
+						// lockout wins with 13 squares
+						if (boardRep.value.goalCounts[color]==13) {
+							// BINGO!
+							bingos=1;
+						}
+					} else if (bingotype.includes('blackout')) {
+						// blackout finishes at all 25 squares
+						if (boardRep.value.goalCounts[color]==25) {
+							// BINGO!
+							bingos=1;
+						}
+					}
+					if (bingos>0) {
+						nodecg.sendMessage('showBingoAnimation');
+					}
 				}
 			}
 		};

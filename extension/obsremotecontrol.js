@@ -64,6 +64,9 @@ obsWebsocketRep.on('change',newVal=>{
     if (initialized || newVal.status != "connected") return;
     initialized = true;
 
+    obsProgramScreenRep.once('change', newVal=>{
+    obsPreviewScreenRep.once('change', newVal=>{
+
     obsNextScenesNumRep.on('change',(newVal)=>{
         var nextPreviewScene = obsNextScenesRep.value[newVal];
         if (nextPreviewScene) {
@@ -242,4 +245,7 @@ obsWebsocketRep.on('change',newVal=>{
             }
         }
     });*/
+    
+    });
+    });
 });

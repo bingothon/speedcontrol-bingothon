@@ -59,6 +59,19 @@ function formatToSceneName(rawSceneName, playerCount, layout) {
     }
 }
 
+// returns false if an OBS replicant is null
+function checkForNulls() {
+    if (!obsPreviewScreenRep.value) {
+        nodecg.log.error('OBS preview screen is not defined!');
+        return false;
+    }
+    if (!obsProgramScreenRep.value) {
+        nodecg.log.error('OBS program screen is not defined!');
+        return false;
+    }
+    return true;
+}
+
 //make sure obswebsocket is initialized before adding stuff depending on it
 obsWebsocketRep.on('change',newVal=>{
     if (initialized || newVal.status != "connected") return;
@@ -201,6 +214,7 @@ obsWebsocketRep.on('change',newVal=>{
 
     // catches the event when the user triggers the switch to the next scene
     nodecg.listenFor('obsTransitionToNextScene',()=>{
+        if(!checkForNulls()) return;
 
         var nextScene = obsPreviewScreenRep.value.name;
         // prepare for next scene
@@ -213,6 +227,7 @@ obsWebsocketRep.on('change',newVal=>{
     });
 
     obsStreamMode.on('change', newVal=>{
+        if(!checkForNulls()) return;
         // change in current scene
         handleScreenStreamModeChange(newVal, obsProgramScreenRep.value.name);
     });
@@ -245,7 +260,7 @@ obsWebsocketRep.on('change',newVal=>{
             }
         }
     });*/
-    
+
     });
     });
 });

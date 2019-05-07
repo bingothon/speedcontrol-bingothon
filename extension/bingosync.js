@@ -417,7 +417,7 @@ function createWebsocket(socketUrl, socketKey) {
 						}
 					}
 					if (bingos>0) {
-						nodecg.sendMessage('showBingoAnimation');
+						nodecg.sendMessage('showBingoAnimation',{color});
 					}
 				}
 			}

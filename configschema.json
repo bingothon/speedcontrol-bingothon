@@ -2,6 +2,13 @@
 	"$schema": "http://json-schema.org/draft-04/schema#",
 	"type": "object",
 	"properties": {
+		"twitch": {
+			"type":"object",
+			"properties": {
+				"enable": {"type":"boolean", "default": false},
+				"chatBot": {"type":"boolean", "default": false}
+			}
+		},
 		"discord": {
 			"type": "object",
 			"properties": {

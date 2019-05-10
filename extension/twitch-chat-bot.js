@@ -1,11 +1,26 @@
 'use-strict'
 
 var TwitchJS = require('twitch-js');
+const bingoDefinitions = require('./bingodefinitions');
 
 var nodecg = require('./utils/nodecg-api-context').get();
 
 // Map<str, {response:bla, enabled:true, cooldown:0, lastUsed:123456}>
 var chatCommandsRep = nodecg.Replicant('chatCommands', {defaultValue: {}});
+
+// keep track of cooldowns
+var cooldowns = {runner:{lastUsed:0, cooldown:15}, bingo:{lastUsed:0, cooldown:15}};
+// in case the cooldowns need to be adjusted
+nodecg.listenFor('setCommandCooldown',data=>{
+    if (!data || !data.command || !data.cooldown) {
+        nodecg.log.error("can't set cooldown if command and/or cooldown are missing, got:",data);
+    } else {
+        var com = cooldowns[data.command];
+        if (com) {
+            com.cooldown = data.cooldown;
+        }
+    }
+})
 
 // Setting up replicants.
 var accessToken = nodecg.Replicant('twitchAccessToken', 'nodecg-speedcontrol');
@@ -39,8 +54,8 @@ if (nodecg.bundleConfig && nodecg.bundleConfig.twitch && nodecg.bundleConfig.twi
             if (user['message-type'] != 'chat') return;
             if (!message.startsWith('!')) return;
             var parts = message.split(' ', 3);
-            // check mod only commands
-            if ((user.mod || 'broadcaster' in user.badges) && parts.length >= 2) {
+            // check mod only commands, currently not used
+            /*if ((user.mod || 'broadcaster' in user.badges) && parts.length >= 2) {
                 // name of the command to edit
                 var commandname = parts[1];
                 if (parts.length == 2) {
@@ -91,16 +106,45 @@ if (nodecg.bundleConfig && nodecg.bundleConfig.twitch && nodecg.bundleConfig.twi
                         }
                     }
                 }
-            }
+            }*/
             var userCommandName = parts[0].slice(1);
-            if (userCommandName == "runner" || userCommandName == "r") {
+            var now = new Date().getTime();
+            if (userCommandName == "runner" || userCommandName == "runners" || userCommandName == "r") {
+                // check cooldown to not spam chat
+                if (now - cooldowns.runner.lastUsed < cooldowns.runner.cooldown) {
+                    return;
+                }
+                cooldowns.runner.lastUsed = now;
                 // Grab current runners and format them & their twitch
                 var runersStr = runDataActiveRunRep.value.teams.flatMap(t => t.players).map(p => `${p.name} ( twitch.tv/${p.social.twitch} )`).join(', ');
                 if (runersStr) {
-                    client.say(channel, 'Follow the runners: '+runersStr);
+                    client.say(channel, 'Follow the runners: '+runersStr)
+                        .catch(e=>nodecg.log.error('',e));
                 }
                 return;
             }
+            if (userCommandName == "bingo") {
+                // check cooldown to not spam chat
+                if (now - cooldowns.bingo.lastUsed < cooldowns.bingo.cooldown) {
+                    return;
+                }
+                cooldowns.bingo.lastUsed = now;
+                if (runDataActiveRunRep.value && runDataActiveRunRep.value.customData) {
+                    var bingotype = runDataActiveRunRep.value.customData.Bingotype;
+                    if (bingotype) {
+                        var isCoop = runDataActiveRunRep.value.teams[0].players.length > 1;
+                        var explanation = bingoDefinitions[bingotype];
+                        if (explanation) {
+                            if (isCoop) {
+                                explanation += bingoDefinitions.coop;
+                            }
+                            client.say(channel, explanation)
+                                .catch(e=>nodecg.log.error('',e));
+                        }
+                    }
+                }
+            }
+            /* also custom chatbot stuff not used
             if (chatCommandsRep.value.hasOwnProperty(userCommandName)) {
                 var userCommand = chatCommandsRep.value[userCommandName];
                 if (userCommand &&
@@ -109,17 +153,18 @@ if (nodecg.bundleConfig && nodecg.bundleConfig.twitch && nodecg.bundleConfig.twi
                         client.say(channel, userCommand.response);
                         userCommand.lastUsed = new Date().getTime();
                 }
-            }
+            }*/
         }
-        client.connect();
-        client.once('connected', function(address, port) {
-            client.on('message', messageHandler);
-            client.join(twitchChannelNameRep.value)
-                .catch(reason => {
-                    nodecg.log.error("Couldn't join channel: "+reason);
-                }).then(data=>{
-                    nodecg.log.info("Joined channel: "+data);
-                });
-        });
+        client.connect()
+            .catch(e=>nodecg.log.error('',e))
+            .then(()=>{
+                client.on('message', messageHandler);
+                client.join(twitchChannelNameRep.value)
+                    .catch(reason => {
+                        nodecg.log.error("Couldn't join channel: "+reason);
+                    }).then(data=>{
+                        nodecg.log.info("Joined channel: "+data);
+                    });
+            });
     });
 }

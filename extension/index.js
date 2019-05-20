@@ -48,7 +48,7 @@ module.exports = function(nodecg) {
 	}
 
 	// POSTs FFZ featured channels changes to the repeater server.
-	var repeaterURL = 'https://repeater.esamarathon.com';
+	var repeaterURL = 'https://fcb.esamarathon.com';
 	var request = require('request-promise').defaults({jar: true}); // Automatically saves and re-uses cookies.
 	var postKey = nodecg.bundleConfig.esaRepeaterPostKey || 'DEFAULT_KEY';
 	if (postKey && postKey !== 'DEFAULT_KEY') {

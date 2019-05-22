@@ -116,9 +116,10 @@ if (nodecg.bundleConfig && nodecg.bundleConfig.twitch && nodecg.bundleConfig.twi
                 }
                 cooldowns.runner.lastUsed = now;
                 // Grab current runners and format them & their twitch
-                var runersStr = runDataActiveRunRep.value.teams.flatMap(t => t.players).map(p => `${p.name} ( twitch.tv/${p.social.twitch} )`).join(', ');
+		var playerCount = 1;
+                var runersStr = runDataActiveRunRep.value.teams.flatMap(t => t.players).map(p => `Player ${playerCount++}: ${p.name} ( twitch.tv/${p.social.twitch} )`).join('. ');
                 if (runersStr) {
-                    client.say(channel, 'Follow the runners: '+runersStr)
+                    client.say(channel, 'Follow the runners! '+runersStr)
                         .catch(e=>nodecg.log.error('',e));
                 }
                 return;

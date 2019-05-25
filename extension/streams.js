@@ -12,6 +12,7 @@ var nodecg = require('./utils/nodecg-api-context').get();
 var runDataActiveRunReplicant = nodecg.Replicant("runDataActiveRun", 'nodecg-speedcontrol');
 
 var streamsReplicant = nodecg.Replicant('twitch-streams', {'defaultValue':[]});
+var soundOnTwitchStream = nodecg.Replicant('sound-on-twitch-stream', {defaultValue:-1});
 
 const aspectRatioToCropping = {
 	"16_9":{'widthPercent':100,'heightPercent':100,'topPercent':0,'leftPercent':0},
@@ -21,8 +22,10 @@ const aspectRatioToCropping = {
 	"10_9":{'widthPercent':160,'heightPercent':100,'topPercent':0,'leftPercent':0},
 };
 
-runDataActiveRunReplicant.on('change', newVal => {
-	if (!newVal) return;
+streamsReplicant.once('change',()=>{
+runDataActiveRunReplicant.on('change', (newVal, old) => {
+	// don't reset on server restart
+	if (!newVal || !old) return;
 
 	// set the initial cropping based on the aspect ratio marked in the schedule
 	var cropping = {'widthPercent':100,'heightPercent':100,'topPercent':0,'leftPercent':0};
@@ -32,8 +35,10 @@ runDataActiveRunReplicant.on('change', newVal => {
 	
 	// grab all runners
 	var newStreams = []
+	var idx = 0;
 	newVal.teams.forEach(team => {
 		team.players.forEach(player => {
+			// in case the replicant changed, but this stream wasn't affected, don't reset cropping
 			var current = {'channel':'speedrunslive','quality':'chunked','volume':1,'paused':false,'hidden':true};
 			current.widthPercent = cropping.widthPercent;
 			current.heightPercent = cropping.heightPercent;
@@ -44,10 +49,16 @@ runDataActiveRunReplicant.on('change', newVal => {
 				current.paused = true;
 				current.hidden = true;
 			} else {
-				current.channel = player.social.twitch;
-				current.hidden = false;
+				var oldStream = streamsReplicant.value[idx];
+				if (!oldStream || player.social.twitch != oldStream.channel){
+					current.channel = player.social.twitch;
+					current.hidden = false;
+				} else {
+					current = oldStream;
+				}
 			}
 			newStreams.push(current);
+			idx++;
 		});
 	});
 	// hide/mute/stop all other streams
@@ -56,4 +67,5 @@ runDataActiveRunReplicant.on('change', newVal => {
 		newStreams.push({"paused":true, "hidden":true});
 	}
 	streamsReplicant.value = newStreams;
+});
 });

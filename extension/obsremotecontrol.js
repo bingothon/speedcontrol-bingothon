@@ -226,7 +226,9 @@ obsWebsocketRep.on('change',newVal=>{
         setTimeout(()=>{ obsNextScenesNumRep.value++;}, 4000);
     });
 
-    obsStreamMode.on('change', newVal=>{
+    obsStreamMode.on('change', (newVal, old)=>{
+        // no value is most likely server restart
+        if (!old) return;
         if(!checkForNulls()) return;
         // change in current scene
         handleScreenStreamModeChange(newVal, obsProgramScreenRep.value.name);

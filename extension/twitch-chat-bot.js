@@ -28,6 +28,8 @@ var twitchChannelNameRep = nodecg.Replicant('twitchChannelName', 'nodecg-speedco
 var runDataActiveRunRep = nodecg.Replicant('runDataActiveRun', 'nodecg-speedcontrol');
 
 if (nodecg.bundleConfig && nodecg.bundleConfig.twitch && nodecg.bundleConfig.twitch.enable && nodecg.bundleConfig.twitch.chatBot) {
+    accessToken.once('change',()=>{
+    twitchChannelNameRep.once('change',()=>{
     nodecg.listenFor('twitchAPIReady', 'nodecg-speedcontrol', () => {
         nodecg.log.info("Twitch chat bot is enabled.");
 
@@ -167,5 +169,7 @@ if (nodecg.bundleConfig && nodecg.bundleConfig.twitch && nodecg.bundleConfig.twi
                         nodecg.log.info("Joined channel: "+data);
                     });
             });
+    });
+    });
     });
 }
